@@ -7,11 +7,16 @@ import edu.stanford.nlp.ling.Document;
 
 import java.util.List;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
@@ -46,6 +51,16 @@ public class ninjaWrapper extends HttpServlet{
 //        
         
         String url = req.getParameter("url");
+                
+        if(url == null)
+        {
+            String html = readFile("ninja.html");
+            resp.getWriter().print(html);
+            System.out.print("something" + html);
+            return;
+        }
+        
+        
         PrintWriter out = resp.getWriter();
         URL u = new URL(url);
         
@@ -78,6 +93,19 @@ public class ninjaWrapper extends HttpServlet{
 //        System.out.print(xml);
 //        resp.getWriter().print(xml);
     }
+
+    private static String readFile(String path) throws IOException {
+        FileInputStream stream = new FileInputStream(new File(path));
+        try {
+          FileChannel fc = stream.getChannel();
+          MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+          /* Instead of using default, pass in a decoder. */
+          return Charset.defaultCharset().decode(bb).toString();
+        }
+        finally {
+          stream.close();
+        }
+      }
 
     
     public static void main(String[] args) throws IOException {
